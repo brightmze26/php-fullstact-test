@@ -240,13 +240,6 @@ Hasil:
 
 ---
 
-## Catatan Tambahan
-
-* Redis tidak menggunakan TTL agar cache bersifat persisten.
-* MinIO digunakan sebagai **S3-compatible storage** untuk keperluan testing lokal.
-
----
-
 ## Kesimpulan
 
 * CRUD PostgreSQL
@@ -255,4 +248,3 @@ Hasil:
 * Update dan delete cache sesuai perubahan data
 * Soft delete sesuai SQL schema
 
-````
