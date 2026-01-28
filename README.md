@@ -1,59 +1,258 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Tech Stack
+- **Backend**: Laravel (PHP)
+- **Database**: PostgreSQL
+- **Cache**: Redis
+- **Object Storage**: MinIO (S3 compatible)
+- **Local Environment**: Laravel Herd
+- **Dependency Manager**: Composer
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+---
 
-## About Laravel
+## Setup Aplikasi
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### 1. Clone Repository
+```bash
+git clone https://github.com/<your-username>/php-fullstact-test.git
+cd php-fullstact-test
+````
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Jika struktur repository berisi folder `api/`, masuk ke folder tersebut:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```bash
+cd api
+```
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 2. Install Dependency
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+composer install
+```
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 3. Konfigurasi Environment
 
-### Premium Partners
+Salin file environment:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+cp .env.example .env
+```
 
-## Contributing
+Edit `.env` dan sesuaikan konfigurasi berikut.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+#### Database (PostgreSQL)
 
-## Code of Conduct
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=peepl
+DB_USERNAME=peepl
+DB_PASSWORD=peepl
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+#### Redis
 
-## Security Vulnerabilities
+```env
+REDIS_CLIENT=predis
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+#### MinIO (S3 Compatible)
 
-## License
+```env
+FILESYSTEM_DISK=s3
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+AWS_ACCESS_KEY_ID=minioadmin
+AWS_SECRET_ACCESS_KEY=minioadmin123
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=peepl-bucket
+AWS_ENDPOINT=http://127.0.0.1:9000
+AWS_USE_PATH_STYLE_ENDPOINT=true
+```
+
+---
+
+### 4. Generate Application Key
+
+```bash
+php artisan key:generate
+```
+
+---
+
+### 5. Migrasi Database
+
+```bash
+php artisan migrate
+```
+
+Migrasi ini akan membuat tabel `my_client` sesuai SQL schema yang diberikan, termasuk kolom `deleted_at` untuk **soft delete**.
+
+---
+
+### 6. Menjalankan Aplikasi (Laravel Herd)
+
+Daftarkan project ke Herd:
+
+```bash
+herd link peepl-api
+```
+
+Akses aplikasi di:
+
+```
+http://peepl-api.test
+```
+
+---
+
+## API Endpoints & Pengujian Requirement
+
+### No 1 – GET List Client
+
+```http
+GET /api/my-clients
+```
+
+* Jika database masih kosong, respons:
+
+```json
+[]
+```
+
+* Setelah data ditambahkan, respons berupa array client.
+
+---
+
+### No 2 – CREATE Client + Upload Logo
+
+```http
+POST /api/my-clients
+```
+
+Body type: **multipart/form-data**
+
+| Field         | Value              |
+| ------------- | ------------------ |
+| name          | PT Test            |
+| slug          | pt-test            |
+| is_project    | 0                  |
+| self_capture  | 1                  |
+| client_prefix | TEST               |
+| address       | Jalan 123          |
+| phone_number  | 08123456789        |
+| city          | Jakarta            |
+| client_logo   | file (.jpg / .png) |
+
+Hasil:
+
+* Data tersimpan di PostgreSQL
+* File logo ter-upload ke MinIO
+* Kolom `client_logo` berisi URL file
+* Redis otomatis membuat key dengan nama slug (`pt-test`) dan value JSON client
+
+---
+
+### No 3 – GET Client by Slug
+
+```http
+GET /api/my-clients/slug/{slug}
+```
+
+Contoh:
+
+```http
+GET /api/my-clients/slug/pt-test
+```
+
+Endpoint ini:
+
+* Mengambil data berdasarkan slug
+* Menggunakan Redis sebagai cache utama
+
+---
+
+### No 4 – UPDATE Client (Slug Change)
+
+```http
+PUT /api/my-clients/{id}
+```
+
+Contoh payload:
+
+```json
+{
+  "slug": "pt-test-2"
+}
+```
+Hasil: 
+
+* Redis key lama (`pt-test`) dihapus
+* Redis key baru (`pt-test-2`) dibuat
+* Data di PostgreSQL diperbarui
+
+---
+
+### No 5 – DELETE Client (Soft Delete)
+
+```http
+DELETE /api/my-clients/{id}
+```
+
+Hasil:
+
+* Kolom `deleted_at` terisi (soft delete)
+* Data tidak muncul di list
+* Redis key dihapus
+
+---
+
+## Verifikasi Redis (Opsional)
+
+Masuk ke tinker:
+
+```bash
+php artisan tinker
+```
+
+Hasil:
+
+```php
+\Illuminate\Support\Facades\Redis::connection()->get('pt-test-2');
+```
+
+---
+
+## Catatan Kesesuaian SQL
+
+* Tabel menggunakan nama **`my_client`**.
+* Beberapa kolom menggunakan tipe **CHAR**, sehingga PostgreSQL menambahkan trailing spaces.
+  Data dinormalisasi (trim) di layer aplikasi agar:
+
+  * output API bersih
+  * slug Redis konsisten
+* Kolom `is_project` dibatasi nilai `'0'` atau `'1'`.
+* Soft delete menggunakan kolom `deleted_at`.
+
+---
+
+## Catatan Tambahan
+
+* Redis tidak menggunakan TTL agar cache bersifat persisten.
+* MinIO digunakan sebagai **S3-compatible storage** untuk keperluan testing lokal.
+
+---
+
+## Kesimpulan
+
+* CRUD PostgreSQL
+* Redis cache berbasis slug
+* Upload file ke S3-compatible storage
+* Update dan delete cache sesuai perubahan data
+* Soft delete sesuai SQL schema
+
+````
